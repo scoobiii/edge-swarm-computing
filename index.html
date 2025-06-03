@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge Swarm Computing | O Data Center é Você</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --wired-neon: #00ff88;
+            --wired-pink: #ff0080;
+            --wired-blue: #0080ff;
+            --wired-orange: #ff8000;
+            --wired-bg: #0a0a0a;
+            --wired-dark: #1a1a1a;
+            --wired-text: #ffffff;
+            --wired-gray: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--wired-bg);
+            color: var(--wired-text);
+            overflow-x: hidden;
+        }
+
+        /* Animated background grid */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--wired-neon);
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 40px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--wired-neon), var(--wired-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Navigation */
+        .nav {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-item {
+            color: var(--wired-text);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            color: var(--wired-neon);
+            background: rgba(0, 255, 136, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            color: var(--wired-neon);
+            background: rgba(0, 255, 136, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-item:hover::before {
+            left: 100%;
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--wired-neon);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .mobile-nav {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--wired-neon);
+            padding: 20px 0;
+        }
+
+        .mobile-nav.active {
+            display: block;
+        }
+
+        .mobile-nav .nav-item {
+            display: block;
+            padding: 15px 40px;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        /* Share/Publish Button */
+        .publish-btn {
+            background: linear-gradient(45deg, var(--wired-pink), var(--wired-blue));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .publish-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 0, 128, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding: 0 40px;
+        }
+
+        .hero-content h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--wired-neon), var(--wired-pink), var(--wired-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .hero-content .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: var(--wired-gray);
+        }
+
+        .hero-content .tagline {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--wired-neon);
+            text-shadow: 0 0 20px var(--wired-neon);
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px var(--wired-neon)); }
+            to { filter: drop-shadow(0 0 40px var(--wired-pink)); }
+        }
+
+        /* Sections */
+        .section {
+            padding: 100px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 40px;
+            color: var(--wired-neon);
+        }
+
+        .section p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: #cccccc;
+        }
+
+        /* Glitch Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .glitch-card {
+            background: linear-gradient(145deg, var(--wired-dark), #0f0f0f);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--wired-neon);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .glitch-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 255, 136, 0.3);
+        }
+
+        .glitch-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .glitch-card:hover::before {
+            left: 100%;
+        }
+
+        .glitch-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--wired-pink);
+        }
+
+        .external-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: linear-gradient(45deg, var(--wired-blue), var(--wired-neon));
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .external-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 128, 255, 0.4);
+        }
+
+        /* Charts Container */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 60px 0;
+        }
+
+        .chart-box {
+            background: var(--wired-dark);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--wired-blue);
+        }
+
+        .chart-box h3 {
+            color: var(--wired-blue);
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        /* Mermaid Diagrams */
+        .diagram-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: var(--wired-dark);
+            border-radius: 15px;
+            border: 1px solid var(--wired-orange);
+        }
+
+        .mermaid {
+            background: transparent !important;
+        }
+
+        /* Stats Counter */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(145deg, var(--wired-dark), #0f0f0f);
+            border-radius: 15px;
+            border: 1px solid var(--wired-pink);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--wired-pink);
+            text-shadow: 0 0 20px var(--wired-pink);
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--wired-gray);
+            margin-top: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--wired-dark);
+            padding: 60px 40px;
+            text-align: center;
+            border-top: 1px solid var(--wired-neon);
+        }
+
+        .footer .quote {
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--wired-neon);
+            margin-bottom: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-content h1 { font-size: 2.5rem; }
+            .charts-container { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .section { padding: 60px 20px; }
+            .header-content { padding: 15px 20px; }
+            
+            .nav {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .mobile-nav .nav-item {
+                padding: 15px 20px;
+            }
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    
+    <header class="header">
+        <div class="header-content">
+            <h1>EDGE SWARM COMPUTING</h1>
+            <nav class="nav">
+                <a href="#hero" class="nav-item active" data-section="hero">Início</a>
+                <a href="#moore" class="nav-item" data-section="moore">Lei de Moore</a>
+                <a href="#datacenter" class="nav-item" data-section="datacenter">Data Centers</a>
+                <a href="#banks" class="nav-item" data-section="banks">Bancos</a>
+                <a href="#architecture" class="nav-item" data-section="architecture">Arquitetura</a>
+                <a href="#future" class="nav-item" data-section="future">Futuro</a>
+                <button class="publish-btn" onclick="shareContent()">
+                    📡 Compartilhar
+                </button>
+            </nav>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </div>
+        <nav class="mobile-nav" id="mobileNav">
+            <a href="#hero" class="nav-item" data-section="hero" onclick="closeMobileMenu()">Início</a>
+            <a href="#moore" class="nav-item" data-section="moore" onclick="closeMobileMenu()">Lei de Moore</a>
+            <a href="#datacenter" class="nav-item" data-section="datacenter" onclick="closeMobileMenu()">Data Centers</a>
+            <a href="#banks" class="nav-item" data-section="banks" onclick="closeMobileMenu()">Bancos</a>
+            <a href="#architecture" class="nav-item" data-section="architecture" onclick="closeMobileMenu()">Arquitetura</a>
+            <a href="#future" class="nav-item" data-section="future" onclick="closeMobileMenu()">Futuro</a>
+            <button class="publish-btn" onclick="shareContent(); closeMobileMenu();">
+                📡 Compartilhar
+            </button>
+        </nav>
+    </header>
+
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <h1>EDGE SWARM COMPUTING</h1>
+            <p class="subtitle">O Declínio dos CPDs Tradicionais e a Ascensão das Pontas</p>
+            <p class="tagline">"O Data Center é Você"</p>
+        </div>
+    </section>
+
+    <section class="section fade-in" id="moore">
+        <h2>A Morte da Lei de Moore</h2>
+        <p>Durante 50 anos, a Lei de Moore guiou a duplicação do número de transistores nos chips a cada 18-24 meses. Em 2020, essa tendência entrou em colapso pelo limite térmico e energético. CPUs a 5GHz geravam calor demais.</p>
+        
+        <div class="card-grid">
+            <div class="glitch-card">
+                <h3>Intel Core i9-14900K</h3>
+                <p>24 núcleos, 6 GHz turbo<br>253W TDP</p>
+                <a href="https://www.intel.com/content/www/us/en/products/sku/230496/intel-core-i9-processor-14900k-36m-cache-up-to-6-00-ghz/specifications.html" target="_blank" rel="noopener" class="external-link">
+                    📊 Specs Intel →
+                </a>
+            </div>
+            <div class="glitch-card">
+                <h3>Apple M3 Ultra</h3>
+                <p>Até 24 núcleos, 3.2 GHz<br>&lt; 50W TDP</p>
+                <a href="https://www.apple.com/mac-studio/" target="_blank" rel="noopener" class="external-link">
+                    🍎 Apple Silicon →
+                </a>
+            </div>
+            <div class="glitch-card">
+                <h3>HVM Runtime</h3>
+                <p>Paralelismo funcional<br>Graph-based VM</p>
+                <a href="https://github.com/HigherOrderCO/Bend" target="_blank" rel="noopener" class="external-link">
+                    🔗 Bend Language →
+                </a>
+            </div>
+        </div>
+        
+        <p>Para suportar IA generativa, blockchain e Web3, a computação agora exige arquiteturas paralelas e linguagens novas, como <strong>HVM</strong> (High-Performance Virtual Machine) e <strong>Bend</strong> - uma linguagem funcional orientada a paralelismo massivo.</p>
+    </section>
+
+    <section class="section fade-in" id="datacenter">
+        <h2>O Colapso dos Data Centers</h2>
+        <div class="charts-container">
+            <div class="chart-box">
+                <h3>Consumo Energético Global</h3>
+                <canvas id="energyChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>Latência vs Processamento Edge</h3>
+                <canvas id="latencyChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">500 MW</div>
+                <div class="stat-label">Consumo médio DC 2024(MW)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">50 ms</div>
+                <div class="stat-label">Latência WAN média(ms)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">8 (%)</div>
+                <div class="stat-label">Projeção energia 2030(%)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">8 B</div>
+                <div class="stat-label">Dispositivos conectados(B) </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section fade-in" id="banks">
+        <h2>Bancos: Itaú vs Nubank</h2>
+        <p>Comparação entre o modelo tradicional e o edge-native financeiro</p>
+        
+        <div class="card-grid">
+            <div class="glitch-card">
+                <h3>🏦 Itaú - Modelo Tradicional</h3>
+                <p>Infraestrutura centralizada<br>Data centers monolíticos<br>Legacy core banking</p>
+                <a href="https://www.itau.com.br/relacoes-com-investidores/" target="_blank" rel="noopener" class="external-link">
+                    📈 Relatórios Itaú →
+                </a>
+            </div>
+            <div class="glitch-card">
+                <h3>💜 Nubank - Edge Native</h3>
+                <p>Cloud + processamento distribuído<br>Microserviços<br>AI no dispositivo</p>
+                <a href="https://ir.nu/" target="_blank" rel="noopener" class="external-link">
+                    🚀 Investor Relations →
+                </a>
+            </div>
+        </div>
+        
+        <div class="charts-container">
+            <div class="chart-box">
+                <h3>Lucro Anual 2024 (R$ bilhões)</h3>
+                <canvas id="profitChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>ROE - Retorno sobre Patrimônio</h3>
+                <canvas id="roeChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section class="section fade-in" id="architecture">
+        <h2>Arquitetura: Do Monolítico ao Distribuído</h2>
+        <div class="diagram-container">
+            <div class="mermaid">
+                graph TB
+                    subgraph "Modelo Tradicional - Itaú"
+                        DC[Data Center] --> APP1[App Mobile]
+                        DC --> APP2[Internet Banking]
+                        DC --> APP3[ATM Network]
+                        DC --> CORE[Core Banking]
+                    end
+                    
+                    subgraph "Edge Swarm - Nubank"
+                        EDGE1[Smartphone] --> API[Edge API]
+                        EDGE2[Wearable] --> API
+                        EDGE3[IoT Device] --> API
+                        API --> MICRO1[Auth µService]
+                        API --> MICRO2[Credit µService]
+                        API --> MICRO3[Payment µService]
+                    end
+                    
+                    style DC fill:#ff4444
+                    style EDGE1 fill:#00ff88
+                    style EDGE2 fill:#00ff88
+                    style EDGE3 fill:#00ff88
+                    style API fill:#0080ff
+            </div>
+        </div>
+    </section>
+
+    <section class="section fade-in">
+        <h2>Cloud vs Edge Computing Evolution</h2>
+        <div class="diagram-container">
+            <div class="mermaid">
+                graph LR
+                    subgraph "2010-2020: Cloud Era"
+                        A[User Device] --> B[Internet]
+                        B --> C[Load Balancer]
+                        C --> D[Cloud Server Farm]
+                        D --> E[Database Cluster]
+                    end
+                    
+                    subgraph "2025+: Edge Swarm Era"
+                        F[Smart Device] --> G[Local Processing]
+                        G --> H[Edge Mesh Network]
+                        H --> I[Distributed Database]
+                        F --> J[Direct P2P]
+                        J --> K[Another Smart Device]
+                    end
+                    
+                    style A fill:#666666
+                    style D fill:#ff4444
+                    style F fill:#00ff88
+                    style G fill:#00ff88
+                    style H fill:#0080ff
+                    style K fill:#00ff88
+            </div>
+        </div>
+    </section>
+
+    <section class="section fade-in" id="future">
+        <h2>O Futuro: Cloudless Computing</h2>
+        <p>Com 8 bilhões de dispositivos, cada com múltiplos núcleos, temos um supercomputador massivo, já energizado e distribuído.</p>
+        
+        <div class="charts-container">
+            <div class="chart-box">
+                <h3>Evolução da Capacidade (GFLOPS/USD)</h3>
+                <canvas id="evolutionChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>Projeção Edge Swarm 2025-2030</h3>
+                <canvas id="projectionChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p class="quote">"Se você está lendo isso, você está computando para o seu banco."</p>
+        <p>— WIRED Fictional Footer, 2025</p>
+        <p>Autor: zeh sobrinho | Colaboração: little seven {claude, gpt, manus, deepseek, qwen, gemini, grok}</p>
+        <p>Junho 03, 2025</p>
+        
+        <div style="margin-top: 30px; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+            
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#00ff88',
+                primaryTextColor: '#ffffff',
+                primaryBorderColor: '#00ff88',
+                lineColor: '#0080ff',
+                secondaryColor: '#ff0080',
+                tertiaryColor: '#ff8000',
+                background: '#1a1a1a',
+                mainBkg: '#1a1a1a',
+                secondBkg: '#0a0a0a'
+            }
+        });
+
+        // Chart configurations
+        Chart.defaults.color = '#ffffff';
+        Chart.defaults.borderColor = '#333333';
+
+        // Energy Consumption Chart
+        const energyCtx = document.getElementById('energyChart').getContext('2d');
+        new Chart(energyCtx, {
+            type: 'line',
+            data: {
+                labels: ['2010', '2015', '2020', '2024', '2030'],
+                datasets: [{
+                    label: 'Data Centers',
+                    data: [0.8, 1.2, 2.1, 3.5, 8.0],
+                    borderColor: '#ff4444',
+                    backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '% Energia Global',
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Latency Chart
+        const latencyCtx = document.getElementById('latencyChart').getContext('2d');
+        new Chart(latencyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Cloud', 'Edge', 'Local'],
+                datasets: [{
+                    label: 'Latência (ms)',
+                    data: [120, 15, 1],
+                    backgroundColor: ['#ff4444', '#0080ff', '#00ff88']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Latência (ms)',
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Profit Comparison Chart
+        const profitCtx = document.getElementById('profitChart').getContext('2d');
+        new Chart(profitCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Itaú', 'Nubank'],
+                datasets: [{
+                    data: [41.4, 12.5],
+                    backgroundColor: ['#ff8000', '#00ff88'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // ROE Chart
+        const roeCtx = document.getElementById('roeChart').getContext('2d');
+        new Chart(roeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Itaú', 'Nubank'],
+                datasets: [{
+                    label: 'ROE %',
+                    data: [22.1, 29.0],
+                    backgroundColor: ['#ff8000', '#00ff88']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'ROE %',
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Evolution Chart
+        const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+        new Chart(evolutionCtx, {
+            type: 'line',
+            data: {
+                labels: ['2000', '2005', '2010', '2015', '2020', '2025', '2030'],
+                datasets: [
+                    {
+                        label: 'Data Centers',
+                        data: [1, 5, 20, 50, 100, 120, 140],
+                        borderColor: '#ff4444',
+                        backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Smartphones',
+                        data: [0, 0, 0.1, 2, 50, 200, 500],
+                        borderColor: '#00ff88',
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Edge Swarm',
+                        data: [0, 0, 0, 0, 1, 100, 1000],
+                        borderColor: '#0080ff',
+                        backgroundColor: 'rgba(0, 128, 255, 0.1)',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'logarithmic',
+                        title: {
+                            display: true,
+                            text: 'GFLOPS por USD',
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Projection Chart
+        const projectionCtx = document.getElementById('projectionChart').getContext('2d');
+        new Chart(projectionCtx, {
+            type: 'line',
+            data: {
+                labels: ['2025', '2026', '2027', '2028', '2029', '2030'],
+                datasets: [{
+                    label: 'ExaFLOPS Distribuídos',
+                    data: [1, 5, 15, 35, 70, 150],
+                    borderColor: '#ff0080',
+                    backgroundColor: 'rgba(255, 0, 128, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'ExaFLOPS',
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Animated counter for stats
+        function animateCounter(element, target, duration = 2000) {
+            let start = 0;
+            const increment = target / (duration / 16);
+            
+            function update() {
+                start += increment;
+                if (start < target) {
+                    element.textContent = Math.floor(start);
+                    requestAnimationFrame(update);
+                } else {
+                    element.textContent = target;
+                }
+            }
+            update();
+        }
+
+        // Initialize counters when stats section is visible
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const numbers = entry.target.querySelectorAll('.stat-number');
+                    numbers.forEach(num => {
+                        const target = parseInt(num.textContent.replace(/[^\d]/g, ''));
+                        if (target > 0) {
+                            num.textContent = '0';
+                            animateCounter(num, target);
+                        }
+                    });
+                    statsObserver.unobserve(entry.target);
+                }
+            });
+        });
+
+        document.querySelectorAll('.stats-grid').forEach(el => {
+            statsObserver.observe(el);
+        });
+
+        // Navigation functionality
+        function initNavigation() {
+            const navItems = document.querySelectorAll('.nav-item[data-section]');
+            const sections = document.querySelectorAll('section[id]');
+
+            // Smooth scroll to sections
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const targetId = item.getAttribute('data-section');
+                    const targetSection = document.getElementById(targetId);
+                    
+                    if (targetSection) {
+                        const headerHeight = document.querySelector('.header').offsetHeight;
+                        const targetPosition = targetSection.offsetTop - headerHeight - 20;
+                        
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Update active nav item on scroll
+            const navObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                        const activeNav = document.querySelector('.nav-item.active');
+                        if (activeNav) activeNav.classList.remove('active');
+                        
+                        const targetNav = document.querySelector(`[data-section="${entry.target.id}"]`);
+                        if (targetNav) targetNav.classList.add('active');
+                    }
+                });
+            }, {
+                threshold: 0.5,
+                rootMargin: '-100px 0px -50% 0px'
+            });
+
+            sections.forEach(section => {
+                navObserver.observe(section);
+            });
+        }
+
+        // Mobile menu functionality
+        function toggleMobileMenu() {
+            const mobileNav = document.getElementById('mobileNav');
+            mobileNav.classList.toggle('active');
+        }
+
+        function closeMobileMenu() {
+            const mobileNav = document.getElementById('mobileNav');
+            mobileNav.classList.remove('active');
+        }
+
+        // Share functionality
+        function shareContent() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Edge Swarm Computing - O Data Center é Você',
+                    text: 'O declínio dos CPDs tradicionais e a ascensão das pontas como cérebro da rede',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: copy to clipboard
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    // Show notification
+                    showNotification('Link copiado para a área de transferência!');
+                });
+            }
+        }
+
+        // Notification system
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: linear-gradient(45deg, var(--wired-neon), var(--wired-pink));
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                font-weight: 600;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add CSS for notifications
+        const notificationCSS = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        const style = document.createElement('style');
+        style.textContent = notificationCSS;
+        document.head.appendChild(style);
+
+        // Initialize navigation
+        initNavigation();
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const mobileNav = document.getElementById('mobileNav');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (!mobileNav.contains(e.target) && !menuBtn.contains(e.target)) {
+                mobileNav.classList.remove('active');
+            }
+        });
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeMobileMenu();
+            }
+        });
+    </script>
+</body>
+</html>
